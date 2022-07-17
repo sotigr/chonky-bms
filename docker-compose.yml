@@ -1,0 +1,49 @@
+
+version: "3.3"
+
+services:
+
+  ingress:
+    container_name: ${PROJECT_NAME}_ingress
+    logging:
+      driver: none
+    ports:
+      - '80:80' 
+    build: 
+      context: ./ingress
+      dockerfile: Dockerfile
+    links:
+     - client
+     - server 
+      
+  client:  
+    container_name: ${PROJECT_NAME}_client
+    image: ${PROJECT_NAME}_client
+    build: client
+    volumes: 
+      - ./client:/client
+    ports:
+      - 3000:3000 
+    links:
+      - server 
+
+  server:  
+    container_name: ${PROJECT_NAME}_server
+    image: ${PROJECT_NAME}_server
+    build: server
+    volumes: 
+      - ./server:/server
+    ports:
+      - 3001:3001
+    links:
+      - mongo 
+
+  mongo:
+    container_name: ${PROJECT_NAME}_mongo 
+    image: mongo:4.4
+    logging:
+      driver: none
+    ports: 
+      - 27017:27017
+    volumes:
+      - .v/db:/data/db

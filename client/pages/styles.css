@@ -1,0 +1,10 @@
+html, body {
+    background-color: #555;
+}
+
+.nav {
+    position: fixed;
+    top: 25px;
+    right: 30px;
+    display: flex;
+}
