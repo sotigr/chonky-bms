@@ -1,8 +1,10 @@
 import React from "react"
+ 
 import { FullFileBrowser, ChonkyActions, defineFileAction } from 'chonky';
 import { ChonkyIconFA } from 'chonky-icon-fontawesome';
 import Api from '../core/api'
 import Router from 'next/router'
+import Head from 'next/head'
 
 export default class Index extends React.Component {
 
@@ -15,8 +17,19 @@ export default class Index extends React.Component {
         return { listings, path }
     }
 
-    render() {
+    state = {
+        loaded: false
+    }
 
+    
+
+    componentDidMount() {
+        this.setState({
+            loaded: true
+        }) 
+    }
+ 
+    render() {
         const deleteAction = defineFileAction({
             id: 'delete',
             button: {
@@ -85,65 +98,78 @@ export default class Index extends React.Component {
         }))
 
         return (
-            <div style={{ height: "calc(100vh - 20px)" }}>
-                <FullFileBrowser
-                    darkMode
-                    disableDefaultFileActions={true}
-                    defaultFileViewActionId={ChonkyActions.EnableListView.id}
-                    iconComponent={ChonkyIconFA}
-                    folderChain={folderChain}
-                    files={files}
-                    fileActions={[
-                        deleteAction,
-                        folderAction,
-                        urlAction,
-                        ChonkyActions.EnableListView
-                    ]}
-                    onFileAction={async (e) => { 
-                        if (e.id == "mouse_click_file") {
-                            if (e.payload.file.isDir) {
-                                Router.push("/?p=" + e.payload.file.path)
-                            } else {
-                                window.open(e.payload.file.url, '_blank').focus();
-                            }
-                        } else if (e.id == "open_files") {
-                            Router.push("/?p=" + e.payload.targetFile.path)
-                        } else if (e.id == "delete" && e.state.selectedFilesForAction.length > 0) {
-                            if (confirm("DELETE! Are you sure?")) {
-                                let api = new Api()
-                                await api.fetchJson('GET', '/api/delete-url/?id=' + e.state.selectedFilesForAction[0].id)
-                                Router.replace(Router.asPath)
-                            }
-                        } else if (e.id == "new_url" ) {
-                            let url = prompt("Enter url", "");
-                            if (url) {
-                                let api = new Api()
-    
-                                await api.fetchJson('POST', '/api/new-url/', {
-                                    path: this.props.path,
-                                    url: url
-                                })
-                                Router.replace(Router.asPath)
-                            }
-                        } else if (e.id == "new_folder" ) {
-                            let folderName = prompt("Enter folder name", "");
-                            if (folderName) {
-                                if (this.props.path.endsWith("/")) {
-    
-                                    Router.push("/?p=" + this.props.path + folderName)
-                                } else {
-                                    Router.push("/?p=" + this.props.path + "/" + folderName)
-    
-                                }
-                            }
-                        }
+            <> 
+                <Head>
+                    <meta name="viewport" content="maximum-scale=1.5, minimum-scale=1.0, initial-scale=1.0, width=device-width" />
+                </Head>
+                {
+                    this.state.loaded && (
 
+                        <div style={{ height: "100vh", width: "100vw" }}>
+                            <FullFileBrowser
+                                darkMode
+                                disableDefaultFileActions={true}
+                                // defaultFileViewActionId={ChonkyActions.EnableListView.id}
+                                iconComponent={ChonkyIconFA}
+                                folderChain={folderChain}
+                                files={files}
+                                fileActions={[
+                                    deleteAction,
+                                    folderAction,
+                                    urlAction,
+                                    // ChonkyActions.EnableListView,
+                                    // ChonkyActions.EnableGridView,
+                                ]}
+                                onFileAction={async (e) => {
+                                    if (e.id == "mouse_click_file") {
+                                        if (e.payload.file.isDir) {
+                                            Router.push("/?p=" + e.payload.file.path)
+                                        } else {
+                                            this.link = document.createElement("a");
+                                            this.link.href = e.payload.file.url;
+                                            this.link.target = "_blank";
+                                            this.link.click();
+                                            delete this.link;
+                                        }
+                                    } else if (e.id == "open_files") {
+                                        Router.push("/?p=" + e.payload.targetFile.path)
+                                    } else if (e.id == "delete" && e.state.selectedFilesForAction.length > 0) {
+                                        if (confirm("DELETE! Are you sure?")) {
+                                            let api = new Api()
+                                            await api.fetchJson('GET', '/api/delete-url/?id=' + e.state.selectedFilesForAction[0].id)
+                                            Router.replace(Router.asPath)
+                                        }
+                                    } else if (e.id == "new_url") {
+                                        let url = prompt("Enter url", "");
+                                        if (url) {
+                                            let api = new Api()
 
+                                            await api.fetchJson('POST', '/api/new-url/', {
+                                                path: this.props.path,
+                                                url: url
+                                            })
+                                            Router.replace(Router.asPath)
+                                        }
+                                    } else if (e.id == "new_folder") {
+                                        let folderName = prompt("Enter folder name", "");
+                                        if (folderName) {
+                                            if (this.props.path.endsWith("/")) {
 
-                    }}
-                />
+                                                Router.push("/?p=" + this.props.path + folderName)
+                                            } else {
+                                                Router.push("/?p=" + this.props.path + "/" + folderName)
+
+                                            }
+                                        }
+                                    }
  
-            </div>
+                                }}
+                            />
+
+                        </div>
+                    )
+                }
+            </>
         )
     }
 }

@@ -1,4 +1,4 @@
-FROM node:16
+FROM node:16 AS builder
 
 WORKDIR /client
 
@@ -9,5 +9,12 @@ RUN rm -rf package-lock.json
 
 RUN npm install
 RUN npm run build
+
+
+FROM node:16
+
+WORKDIR /client
+
+COPY --from=builder /client  .
 
 CMD ["npm", "run", "start"]
