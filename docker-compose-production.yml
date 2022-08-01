@@ -4,45 +4,22 @@ version: "3.3"
 services:
 
   ingress:
-    image: sotig/bms-ingress:latest
-    container_name: ${PROJECT_NAME}_ingress
-    logging:
-      driver: none
-    ports:
-      - '80:80' 
+    image: sotig/bms_ingress:latest
+    container_name: ${PROJECT_NAME}_ingress 
     build: 
       context: ./ingress
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile 
 
-    links:
-     - client
-     - server 
-      
   client:  
-    image: sotig/bms-client:latest
-    container_name: ${PROJECT_NAME}_client
-    image: ${PROJECT_NAME}_client 
+    image: sotig/bms_client:latest
+    container_name: ${PROJECT_NAME}_client 
     build: 
       context: ./client
-      dockerfile: Dockerfile.prod
-    volumes: 
-      - ./client:/client
-    ports:
-      - 3000:3000 
-    links:
-      - server 
+      dockerfile: Dockerfile.prod 
 
   server:  
-    image: sotig/bms-server:latest
-    container_name: ${PROJECT_NAME}_server
-    image: ${PROJECT_NAME}_server 
+    image: sotig/bms_server:latest
+    container_name: ${PROJECT_NAME}_server 
     build: 
       context: ./server
-      dockerfile: Dockerfile.prod
-    volumes: 
-      - ./server:/server
-    ports:
-      - 3001:3001
-    links:
-      - mongo 
- 
+      dockerfile: Dockerfile.prod  

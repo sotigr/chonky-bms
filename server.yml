@@ -1,0 +1,43 @@
+version: "3.3"
+
+services:
+
+  ingress:
+    image: sotig/bms_ingress:latest
+    container_name: bms_ingress
+    restart: always
+    ports:
+      - '80:80' 
+ 
+    links:
+     - client
+     - server 
+      
+  client:  
+    image: sotig/bms_client:latest
+    container_name: bms_client  
+    restart: always
+    ports:
+      - 3000:3000 
+    links:
+      - server 
+
+  server:  
+    image: sotig/bms_server:latest
+    container_name: bms_server   
+    restart: always
+    ports:
+      - 3001:3001
+    links:
+      - mongo 
+
+  mongo:
+    container_name: bms_mongo 
+    image: mongo:4.4 
+    restart: always
+    ports: 
+      - 27017:27017
+    volumes:
+      - .v/db:/data/db
+
+
